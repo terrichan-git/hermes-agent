@@ -10,7 +10,7 @@
  * one bar instead of two.
  */
 
-import { findGroup } from '@/components/pane-shell/tree/model'
+import { findGroup, findGroupOfPane } from '@/components/pane-shell/tree/model'
 import { $activeTreeGroup, $layoutTree, revealTreePane } from '@/components/pane-shell/tree/store'
 import { FileTypeIcon } from '@/components/ui/file-type-icon'
 import { ToolIcon } from '@/components/ui/tool-icon'
@@ -72,6 +72,31 @@ function PreviewTabLead({ tabId }: { tabId: string }) {
 
 const PREVIEW_TILE_PREFIX = 'preview-tile'
 
+/** The right strip's core panes — whichever of these a layout group already
+ *  holds names the strip's zone, and that zone is where a preview belongs: a
+ *  file clicked in Files opens as a TAB beside them, not as a new column
+ *  wedged between the chat and the strip (the first-pass dock's bug). */
+const RIGHT_STRIP_PANES = ['files', 'terminal', 'review'] as const
+
+/** The pane a new preview tile should dock against: a visible core pane of the
+ *  right strip if one is settled in the tree (preference order files →
+ *  terminal → review), else the workspace for the old edge split. */
+function previewAnchorPane(): null | string {
+  const tree = $layoutTree.get()
+
+  if (!tree) {
+    return null
+  }
+
+  for (const paneId of RIGHT_STRIP_PANES) {
+    if (findGroupOfPane(tree, paneId)) {
+      return paneId
+    }
+  }
+
+  return null
+}
+
 /** Keep pane contributions mirroring `$previewTabs`, keep the store's selection
  *  and the tree's active pane agreeing, and front a tile when its tab is
  *  selected. Call once from the root. */
@@ -124,11 +149,16 @@ const watchPreviewTileMirror = paneMirror<{ id: string }>({
   source: $previewTabs,
   key: tab => tab.id,
   prefix: PREVIEW_TILE_PREFIX,
-  // Identical to route (page) tiles: its own zone docked beside main, sized by
-  // the split weights. NOT anchored to the file tree — the old rail was a
-  // files-adjacent strip, and carrying that over welded preview into the file
-  // browser's zone, so ⌘J (toggle file browser) took the preview with it.
-  dir: () => 'right',
+  // A preview docks CENTER into the right strip's zone — the group already
+  // holding files/terminal/review — so a file clicked in Files shows as a tab
+  // beside them (the old rail behavior: one strip, no middle column between
+  // chat and the strip). Only when no such zone exists does it fall back to
+  // the route-tile dock: its own zone beside main, sized by the split weights.
+  // NOT anchored to the file tree when it must split — carrying that over
+  // welded preview into the file browser's zone, so ⌘J (toggle file browser)
+  // took the preview with it.
+  anchor: () => previewAnchorPane() ?? 'workspace',
+  dir: () => (previewAnchorPane() ? 'center' : 'right'),
   minWidth: '22rem',
   title: previewTitle,
   tabLead: tabId => <PreviewTabLead tabId={tabId} />,
