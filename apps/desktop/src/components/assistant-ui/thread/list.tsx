@@ -25,6 +25,7 @@ import { cn } from '@/lib/utils'
 import {
   getThreadScrollPosition,
   onScrollToBottomRequest,
+  onScrollToTopOfLastOutputRequest,
   onThreadEditClose,
   onThreadEditOpen,
   planThreadScrollRestore,
@@ -748,6 +749,80 @@ const ThreadMessageListInner: FC<ThreadMessageListProps> = ({
         }
       }, scrollSessionId),
     [scrollToBottomUnlessSelecting, scrollSessionId, isHistorical, returnToLatest]
+  )
+
+  // Floating scroll-up button → the START of the last assistant output. The
+  // target is the newest turn pair's first row, not the turn's human prompt and
+  // not the top of the transcript: reading back means landing on the answer you
+  // just got, with its prompt still visible above it as context.
+  //
+  // Resolved from the DOM rather than from `rows` because the last turn may be
+  // virtualized or not yet measured when the click lands; querying the live
+  // viewport uses whatever geometry the browser has right now. `CSS.escape` is
+  // unavailable in jsdom, so the data-slot selector needs no escaping.
+  useEffect(
+    () =>
+      onScrollToTopOfLastOutputRequest(() => {
+        const viewport = scrollRef.current
+
+        if (!viewport) {
+          return
+        }
+
+        const turns = viewport.querySelectorAll<HTMLElement>('[data-slot="aui_turn-pair"]')
+
+        if (turns.length === 0) {
+          return
+        }
+
+        // Search BACKWARD for the last turn that actually holds assistant
+        // output. A trailing turn can be a bare user prompt whose reply hasn't
+        // started; its own top is a fine target then. The scan only ever walks
+        // mounted rows, so it stays O(mounted) on a long transcript.
+        let last: HTMLElement | null = null
+        let lastAssistant: HTMLElement | null = null
+
+        for (const turn of turns) {
+          last = turn
+
+          if (turn.querySelector('[data-role="assistant"]')) {
+            lastAssistant = turn
+          }
+        }
+
+        const target = lastAssistant ?? last
+
+        if (!target) {
+          return
+        }
+
+        // Follow-the-bottom is armed by stick-to-bottom; an explicit jump is a
+        // deliberate departure from it, so release the follow before moving.
+        stopScroll()
+
+        const start = viewport.scrollTop
+
+        const destination = Math.max(
+          0,
+          start + target.getBoundingClientRect().top - viewport.getBoundingClientRect().top - 8
+        )
+
+        const duration = matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 170
+        const began = performance.now()
+
+        const step = (now: number) => {
+          const progress = duration ? Math.min(1, (now - began) / duration) : 1
+
+          viewport.scrollTop = start + (destination - start) * (1 - (1 - progress) ** 3)
+
+          if (progress < 1) {
+            requestAnimationFrame(step)
+          }
+        }
+
+        requestAnimationFrame(step)
+      }, scrollSessionId),
+    [scrollRef, scrollSessionId, stopScroll]
   )
 
   // Waking from display: hidden (HUD mode hides the main window; OS hide does

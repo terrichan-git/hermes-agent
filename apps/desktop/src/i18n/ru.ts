@@ -3705,6 +3705,7 @@ export const ru = defineLocale({
       editMessage: 'Изменить сообщение',
       expandMessage: 'Развернуть сообщение',
       scrollToBottom: 'Прокрутить вниз',
+      scrollToLastAnswer: 'Прокрутить к началу последнего ответа',
       stop: 'Стоп',
       restorePrevious: 'Восстановить предыдущий чекпоинт',
       restoreCheckpoint: 'Восстановить чекпоинт',

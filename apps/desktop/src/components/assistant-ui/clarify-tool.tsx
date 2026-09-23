@@ -16,7 +16,7 @@ import {
 import { requestComposerFocus, requestComposerInsert } from '@/app/chat/composer/focus'
 import { useSessionView } from '@/app/chat/session-view'
 import { ToolFallback } from '@/components/assistant-ui/tool/fallback'
-import { WIDGET_SHELL_CLASS } from '@/components/chat/widget-shell'
+import { WIDGET_TINT_SHELL_CLASS } from '@/components/chat/widget-shell'
 import { Button } from '@/components/ui/button'
 import { Kbd } from '@/components/ui/kbd'
 import { Textarea } from '@/components/ui/textarea'
@@ -188,7 +188,7 @@ const OPTION_ROW_CLASS =
 // field-sizing on top of Textarea's shared chrome; kill min-h-16 for one-liners.
 const CLARIFY_TEXTAREA_CLASS = 'field-sizing-content max-h-40 min-h-0 resize-none'
 
-const CLARIFY_SHELL_CLASS = `${WIDGET_SHELL_CLASS} text-[length:var(--conversation-text-font-size)] text-(--ui-text-primary)`
+const CLARIFY_SHELL_CLASS = `${WIDGET_TINT_SHELL_CLASS} text-[length:var(--conversation-text-font-size)] text-(--ui-text-primary)`
 
 const CLARIFY_ICON_CLASS = 'mt-px size-4 shrink-0 text-(--ui-text-tertiary)'
 

@@ -48,6 +48,7 @@ import {
   shouldMigrateComposerScope
 } from '@/store/session'
 import { $focusedStoredSessionId, $sessionStates, sessionTileDelegate } from '@/store/session-states'
+import { $threadJumpButtonVisibleBySession } from '@/store/thread-scroll'
 import { $transcriptTailBySessionId, transcriptTailState } from '@/store/transcript-tail'
 import { isAuxiliaryWindow, isWatchWindow } from '@/store/windows'
 
@@ -76,6 +77,7 @@ import { ResumeExhaustedOverlay } from './resume-exhausted-overlay'
 import { isRouteSessionMismatch } from './route-session-state'
 import { useRuntimeMessageRepository } from './runtime-repository'
 import { ScrollToBottomButton } from './scroll-to-bottom-button'
+import { ScrollToTopOfLastOutputButton } from './scroll-to-top-button'
 import { useSessionView } from './session-view'
 import { SessionActionsMenu } from './sidebar/session-actions-menu'
 import { composerStaysMounted, routedSessionIsLoading, threadLoadingState } from './thread-loading'
@@ -537,6 +539,14 @@ const ChatViewContent = memo(function ChatViewContent({
   const busy = useStore(view.$busy)
   const activeGatewayProfile = useStore($activeGatewayProfile)
   const contextSuggestions = useStore($contextSuggestions)
+
+  // The scroll-up pill mirrors the jump-to-bottom pill: both appear the moment
+  // the reader leaves the bottom. Show it on the same published flag the thread
+  // viewport already maintains, so the pair cannot disagree about visibility.
+  const scrolledUpFromBottom = useStoreSelector($threadJumpButtonVisibleBySession, map =>
+    Boolean(activeSessionId && map[activeSessionId])
+  )
+
   // Per-session (SessionView) reads — a tile IS its session, so these come
   // from the view slice, not the global atoms (which track the primary only).
   const currentCwd = useStore(view.$cwd)
@@ -849,6 +859,12 @@ const ChatViewContent = memo(function ChatViewContent({
             <ResumeExhaustedOverlay onRetryResume={onRetryResume} sessionId={routedSessionId} />
           )}
           {showChatBar && <ScrollToBottomButton sessionId={activeSessionId} />}
+          {showChatBar && (
+            <ScrollToTopOfLastOutputButton
+              sessionId={activeSessionId}
+              visible={scrolledUpFromBottom}
+            />
+          )}
           {/* Vibe hearts rise from the composer only when no pet is out (else
               they play on the pet). Fired by the core `reaction` event. */}
           {!petPresent && (

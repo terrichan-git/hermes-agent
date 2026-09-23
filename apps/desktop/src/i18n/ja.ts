@@ -3468,6 +3468,8 @@ export const ja = defineLocale({
       stopReading: '読み上げを停止',
       readAloud: '読み上げ',
       editMessage: 'メッセージを編集',
+      scrollToBottom: '一番下へスクロール',
+      scrollToLastAnswer: '最後の回答の先頭へスクロール',
       stop: '停止',
       restorePrevious: '前のチェックポイントに戻す',
       restoreCheckpoint: 'チェックポイントを復元',

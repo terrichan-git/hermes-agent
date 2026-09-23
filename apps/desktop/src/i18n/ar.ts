@@ -3001,6 +3001,7 @@ export const ar = defineLocale({
       readAloud: 'قراءة بصوت عال',
       editMessage: 'تحرير الرسالة',
       scrollToBottom: 'التمرير إلى الأسفل',
+      scrollToLastAnswer: 'التمرير إلى بداية الإجابة الأخيرة',
       stop: 'إيقاف',
       restorePrevious: 'استعادة السابق',
       restoreCheckpoint: 'استعادة النقطة',

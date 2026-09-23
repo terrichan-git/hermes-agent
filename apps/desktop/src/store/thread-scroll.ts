@@ -108,6 +108,32 @@ export const requestScrollToBottom = (sessionId: string | null = null) => {
   handlers.get(sessionId)?.forEach(handler => handler())
 }
 
+// ── Scroll to the start of the last assistant output ─────────────────────────
+// The mirror of requestScrollToBottom: the button lives by the composer, the
+// viewport's scroll logic lives inside the thread, so they meet over a bridge.
+// "The last assistant output" is the newest assistant turn in the transcript —
+// its first row is the target, not the turn's prompt or the top of the chat.
+const topHandlers = new Map<string | null, Set<() => void>>()
+
+export const onScrollToTopOfLastOutputRequest = (handler: () => void, sessionId: string | null = null) => {
+  const scoped = topHandlers.get(sessionId) ?? new Set<() => void>()
+
+  scoped.add(handler)
+  topHandlers.set(sessionId, scoped)
+
+  return () => {
+    scoped.delete(handler)
+
+    if (scoped.size === 0) {
+      topHandlers.delete(sessionId)
+    }
+  }
+}
+
+export const requestScrollToTopOfLastOutput = (sessionId: string | null = null) => {
+  topHandlers.get(sessionId)?.forEach(handler => handler())
+}
+
 // Inline edit grows a sticky human bubble. Fire on pointerdown so the viewport
 // escapes stick-to-bottom before focus/layout; close clears the edit flag when
 // the inline composer unmounts.

@@ -148,6 +148,7 @@ renderer and Electron's first window paint.
 | `--ui-text-primary / -secondary / -tertiary` | text hierarchy |
 | `--ui-bg-quaternary` | soft control fill (secondary button) |
 | `--ui-widget-surface-background` | fill for inline chat widgets (`WIDGET_SHELL_CLASS`) |
+| `--ui-tint-surface-background` | the tinted "what was said" fill — sent-prompt bubble + clarify Q&A widget (`WIDGET_TINT_SHELL_CLASS`); aliases `--ui-chat-bubble-background`, so tune it via `--theme-mix-bubble` |
 | `--chrome-action-hover` | hover fill for quiet controls |
 | `--theme-primary`, `--ui-accent` | brand/accent |
 
@@ -348,6 +349,13 @@ so glass and message-bubble transparency do not reveal scrolling text.
   from the chip to the floating pill; leaving both dismisses it.
 - A tool result may expose an inline action that opens a preview. It must not
   open the rail automatically.
+- Two floating transcript controls sit just above the composer and share the
+  `.thread-jump-button` entrance contract: **jump to bottom**, centred, and
+  **jump to the start of the last answer**, anchored to the composer's left
+  edge. Both appear on the same published "scrolled away from the bottom" flag,
+  so they cannot disagree about visibility, and neither may steal the accent or
+  move focus. The up-pill is a convenience for re-reading a long streamed
+  answer; it targets the newest assistant turn, never the transcript top.
 - Tool rows reserve destructive red for explicit failures. Missing read paths and
   ambiguous exit-1 results use neutral notices, with details still available.
   Errors described inside returned data are not tool failures. Expanded failures

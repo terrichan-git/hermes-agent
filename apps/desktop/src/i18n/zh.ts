@@ -4181,6 +4181,7 @@ export const zh = defineLocale({
       editMessage: '编辑消息',
       expandMessage: '展开消息',
       scrollToBottom: '滚动到底部',
+      scrollToLastAnswer: '滚动到最后一条回答的开头',
       stop: '停止',
       restorePrevious: '恢复上一个检查点',
       restoreCheckpoint: '恢复检查点',

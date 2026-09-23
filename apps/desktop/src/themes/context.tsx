@@ -204,7 +204,13 @@ const mixesFor = (isDark: boolean): Record<string, string> => ({
   '--theme-mix-sidebar': '100%',
   '--theme-mix-card': isDark ? '38%' : '22%',
   '--theme-mix-elevated': isDark ? '46%' : '28%',
-  '--theme-mix-bubble': isDark ? '46%' : '0%'
+  // The bubble mix is the ONE tint knob: the sent-prompt bubble and the clarify
+  // Q&A widget both read `--ui-tint-surface-background`, which aliases this. It
+  // used to be 0% in light, which left a light-mode prompt bubble completely
+  // neutral — the ask here was a tint you can actually see, so light gets a
+  // real (if gentle) one. Keep it low: the transcript ground is near-white, so
+  // the visible range before it turns into a hard blue block is narrow.
+  '--theme-mix-bubble': isDark ? '46%' : '45%'
 })
 
 function applyTheme(theme: DesktopTheme, mode: 'light' | 'dark', chatFontFamily = $chatFontFamily.get()) {

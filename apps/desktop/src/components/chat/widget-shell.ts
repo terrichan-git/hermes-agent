@@ -10,3 +10,12 @@
  * no border — the surface reads as a surface on the fill alone.
  */
 export const WIDGET_SHELL_CLASS = 'rounded-3xl bg-(--ui-widget-surface-background) px-3.5 py-3'
+
+/**
+ * The clarify Q&A widget's own fill — the same tinted register as the
+ * sent-prompt bubble (`--dt-user-bubble`), so a question/answer block reads as
+ * part of the same "what was said" layer rather than as another tool panel.
+ * Kept separate from `WIDGET_SHELL_CLASS` because an artifact card is a tool
+ * result and should stay on the neutral widget fill.
+ */
+export const WIDGET_TINT_SHELL_CLASS = 'rounded-3xl bg-(--ui-tint-surface-background) px-3.5 py-3'

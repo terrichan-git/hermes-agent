@@ -382,6 +382,17 @@
       var(--theme-neutral-card)
     );
     --ui-chat-bubble-opaque-background: var(--ui-bg-editor);
+    /* Tinted transcript surfaces — the sent-prompt bubble and the clarify
+       Q&A widget (question + answers). One shared fill so the two read as the
+       same register of "something the person said or was asked", a step away
+       from the plain transcript surface without becoming a second accent.
+
+       Aliased straight to `--ui-chat-bubble-background`, the theme's own bubble
+       fill: the tint follows the active skin and mode for free, and the prompt
+       bubble and the Q&A widget are the same colour *by construction* rather
+       than by two mixers agreeing. No parallel brew of accent + fixed seeds —
+       that is how this class of token ends up glaring in dark mode. */
+    --ui-tint-surface-background: var(--ui-chat-bubble-background);
     --ui-inline-code-background: color-mix(in srgb, #141414 5%, transparent);
     --ui-inline-code-foreground: color-mix(in srgb, #141414 88%, transparent);
     --ui-selection-background: color-mix(in srgb, #ffd24a 55%, transparent);
@@ -437,8 +448,10 @@
        (store/user-bubble-transparency.ts): the share of the theme's bubble
        fill to keep. Unset at the default, so the mix is a no-op and the bubble
        is the theme's fill exactly as before. The border stays put either way —
-       at full transparency the outline is what still marks your turn. */
-    --dt-user-bubble: color-mix(in srgb, var(--ui-chat-bubble-background) var(--user-bubble-keep, 100%), transparent);
+       at full transparency the outline is what still marks your turn.
+       The fill itself is the shared tint surface, so the sent-prompt bubble and
+       the clarify Q&A widget are the same colour register by construction. */
+    --dt-user-bubble: color-mix(in srgb, var(--ui-tint-surface-background) var(--user-bubble-keep, 100%), transparent);
     --dt-user-bubble-border: var(--ui-stroke-tertiary);
 
     --dt-font-sans:
@@ -2417,12 +2430,28 @@ button[data-slot='aui_msg-reactions'] svg {
   transform: translateX(-50%) translateY(0.3rem) scale(0.9);
 }
 
+/* The scroll-up pill rides the same entrance contract but is anchored to the
+   composer's LEFT edge instead of centred, so it sits beside the jump-to-bottom
+   pill rather than on top of it. Override the -50% X translation that the
+   centred variant bakes into both the rest state and every keyframe. */
+.thread-jump-button.top-button {
+  transform: translateX(0) translateY(0.3rem) scale(0.9);
+}
+
 .thread-jump-button[data-state='in'] {
   animation: thread-jump-in 200ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
+.thread-jump-button.top-button[data-state='in'] {
+  animation-name: thread-jump-in-left;
+}
+
 .thread-jump-button[data-state='out'] {
   animation: thread-jump-out 180ms ease-in forwards;
+}
+
+.thread-jump-button.top-button[data-state='out'] {
+  animation-name: thread-jump-out-left;
 }
 
 @keyframes thread-jump-in {
@@ -2449,6 +2478,30 @@ button[data-slot='aui_msg-reactions'] svg {
   }
 }
 
+@keyframes thread-jump-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(0) translateY(0.3rem) scale(1.1);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0) translateY(0) scale(1);
+  }
+}
+
+@keyframes thread-jump-out-left {
+  from {
+    opacity: 1;
+    transform: translateX(0) translateY(0) scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateX(0) translateY(0.3rem) scale(0.9);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .thread-jump-button[data-state='in'],
   .thread-jump-button[data-state='out'] {
@@ -2459,6 +2512,10 @@ button[data-slot='aui_msg-reactions'] svg {
   .thread-jump-button[data-state='in'] {
     opacity: 1;
     transform: translateX(-50%) translateY(0) scale(1);
+  }
+
+  .thread-jump-button.top-button[data-state='in'] {
+    transform: translateX(0) translateY(0) scale(1);
   }
 }
 

@@ -4543,6 +4543,7 @@ export const en: Translations = {
       editMessage: 'Edit message',
       expandMessage: 'Expand message',
       scrollToBottom: 'Scroll to bottom',
+      scrollToLastAnswer: 'Scroll to the start of the last answer',
       stop: 'Stop',
       restorePrevious: 'Restore previous checkpoint',
       restoreCheckpoint: 'Restore checkpoint',

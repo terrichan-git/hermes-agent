@@ -3416,6 +3416,8 @@ export const zhHant = defineLocale({
       stopReading: '停止朗讀',
       readAloud: '朗讀',
       editMessage: '編輯訊息',
+      scrollToBottom: '捲動至底部',
+      scrollToLastAnswer: '捲動至最後一則回答的開頭',
       stop: '停止',
       restorePrevious: '還原至上一個檢查點',
       restoreCheckpoint: '還原檢查點',
