@@ -351,7 +351,7 @@ so glass and message-bubble transparency do not reveal scrolling text.
   open the rail automatically.
 - Two floating transcript controls sit just above the composer and share the
   `.thread-jump-button` entrance contract: **jump to bottom**, centred, and
-  **jump to the start of the last answer**, anchored to the composer's left
+  **jump to the start of the last answer**, anchored to the composer's right
   edge. Both appear on the same published "scrolled away from the bottom" flag,
   so they cannot disagree about visibility, and neither may steal the accent or
   move focus. The up-pill is a convenience for re-reading a long streamed

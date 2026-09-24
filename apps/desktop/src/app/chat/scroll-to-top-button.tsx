@@ -9,9 +9,9 @@ import { requestScrollToTopOfLastOutput } from '@/store/thread-scroll'
 import { useComposerSurfaceId } from './composer/scope'
 
 /**
- * Floating "jump to the start of the last answer" control. Sits beside the
- * composer (to the LEFT of the jump-to-bottom pill so the two never overlap),
- * and lands the viewport on the first row of the newest assistant output.
+ * Floating "jump to the start of the last answer" control. Sits at the RIGHT
+ * edge of the composer column, level with the centred jump-to-bottom pill, and
+ * lands the viewport on the first row of the newest assistant output.
  *
  * It exists because the jump-to-bottom pill answers "take me forward" and
  * nothing answered "take me back to the top of what I just read" — with a long
@@ -62,10 +62,11 @@ export function ScrollToTopOfLastOutputButton({
         }}
         style={{
           bottom: 'calc(var(--composer-measured-height) + 1rem)',
-          // Anchored to the left edge of the composer column rather than centred,
-          // so the pair reads as "back" (left) / "forward" (centre) and the two
-          // never stack. The composer's own width token carries the inset.
-          left: 'calc(50% - (var(--composer-width) / 2) + 0.25rem)'
+          // Anchored to the right edge of the composer column rather than
+          // centred, so it clears the jump-to-bottom pill in the middle. The
+          // composer's own width token carries the inset, keeping the pill in
+          // the transcript's visual column instead of pinned to the window.
+          right: 'calc(50% - (var(--composer-width) / 2) + 0.25rem)'
         }}
         tabIndex={visible ? 0 : -1}
         type="button"
