@@ -45,6 +45,16 @@ export interface DesktopThemeColors {
   sidebarBorder?: string
   userBubble?: string
   userBubbleBorder?: string
+  /**
+   * Ink for the sent-message bubble. Optional, and the reason it exists is the
+   * Codex skin: its bubble is a SOLID invert (black fill, white ink), which the
+   * shared `--theme-bubble-seed` tint cannot express — the seed is mixed 45/46%
+   * into the neutral card, so it can only ever be a pale wash, and the ink was
+   * hardcoded to the transcript foreground. A theme that sets this paints the
+   * bubble as a flat `userBubble` fill instead of a mix, and uses this as its
+   * text. Unset (every pre-existing theme) keeps the tint and the old ink.
+   */
+  userBubbleForeground?: string
 }
 
 export interface DesktopThemeTypography {

@@ -149,6 +149,9 @@ renderer and Electron's first window paint.
 | `--ui-bg-quaternary` | soft control fill (secondary button) |
 | `--ui-widget-surface-background` | fill for inline chat widgets (`WIDGET_SHELL_CLASS`) |
 | `--ui-tint-surface-background` | the tinted "what was said" fill — sent-prompt bubble + clarify Q&A widget (`WIDGET_TINT_SHELL_CLASS`); aliases `--ui-chat-bubble-background`, so tune it via `--theme-mix-bubble` |
+| `--dt-user-bubble` | the sent-prompt bubble's fill. Prefers `--dt-user-bubble-solid` when the theme sets one, else the shared tint above |
+| `--dt-user-bubble-solid` | flat bubble fill for a skin whose bubble is a **solid invert** (Codex: black on light, `#ececec` on dark). Set by the theme context only when a theme supplies **both** `userBubble` and `userBubbleForeground`, because the flat fill is otherwise indistinguishable from a legacy tint *seed* — treating one as the other silently repaints every existing theme |
+| `--dt-user-bubble-ink` | the bubble's text colour: `userBubbleForeground` when set, else the transcript foreground |
 | `--chrome-action-hover` | hover fill for quiet controls |
 | `--theme-primary`, `--ui-accent` | brand/accent |
 

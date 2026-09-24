@@ -291,6 +291,25 @@ function applyTheme(theme: DesktopTheme, mode: 'light' | 'dark', chatFontFamily 
     root.style.setProperty(k, v)
   }
 
+  // The bubble fill/ink pair is OPT-IN, and the SOLID fill is gated on both
+  // being present: styles.css falls back to the shared tint when
+  // `--dt-user-bubble-solid` is absent, so a theme that supplies only a seed
+  // (every pre-existing theme) keeps its tint rendering untouched. Removing the
+  // vars rather than setting them to '' matters — `setProperty('--x', '')` is a
+  // valid-but-empty value, which would defeat the `var(--x, fallback)` chain.
+  for (const [k, v] of [
+    ['--theme-user-bubble-foreground', c.userBubbleForeground],
+    // Only a theme that supplies BOTH wants the flat fill; a lone `userBubble`
+    // is a tint seed and must keep going through color-mix.
+    ['--dt-user-bubble-solid', c.userBubble && c.userBubbleForeground ? c.userBubble : undefined]
+  ] as const) {
+    if (v) {
+      root.style.setProperty(k, v)
+    } else {
+      root.style.removeProperty(k)
+    }
+  }
+
   const chromeBg = chromeBackground(c.background, isDark)
 
   window.hermesDesktop?.setTitleBarTheme?.({

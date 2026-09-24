@@ -150,14 +150,36 @@ describe('ThemeProvider highlight preview', () => {
       expect(cssVar('--theme-foreground')).toBe('#ececec')
     })
 
-    it('feeds the bubble seed that styles.css mixes down to the visible fill', () => {
+    it('paints the bubble as a solid invert, not the seed tint', () => {
+      renderProbe()
+
+      // Codex supplies both, which is what authorises the flat fill. The vars
+      // are the ones styles.css reads: `--dt-user-bubble-solid` is the fill it
+      // prefers, and the ink travels with it so the transcript's foreground
+      // never lands on a black plate.
+      act(() => ctx.previewTheme('codex', 'light'))
+      expect(cssVar('--dt-user-bubble-solid')).toBe('#000000')
+      expect(cssVar('--theme-user-bubble-foreground')).toBe('#ffffff')
+
+      act(() => ctx.previewTheme('codex', 'dark'))
+      // Dark inverts the other way: a black bubble on a #0d0d0d canvas is
+      // invisible, so the fill goes light and the ink dark.
+      expect(cssVar('--dt-user-bubble-solid')).toBe('#ececec')
+      expect(cssVar('--theme-user-bubble-foreground')).toBe('#0d0d0d')
+    })
+
+    it('leaves a legacy theme on the tint path — no solid fill, no ink', () => {
       renderProbe()
 
       act(() => ctx.previewTheme('codex', 'light'))
-      expect(cssVar('--theme-bubble-seed')).toBe('#7a7a7a')
+      expect(cssVar('--dt-user-bubble-solid')).toBe('#000000')
 
-      act(() => ctx.previewTheme('codex', 'dark'))
-      expect(cssVar('--theme-bubble-seed')).toBe('#6a6a6a')
+      // nous has a `userBubble` SEED but no ink. It must NOT be promoted to a
+      // flat fill — that would repaint every pre-existing theme's bubble — so
+      // the solid var goes away and styles.css falls back to the shared tint.
+      act(() => ctx.previewTheme('nous', 'light'))
+      expect(cssVar('--dt-user-bubble-solid')).toBe('')
+      expect(cssVar('--theme-user-bubble-foreground')).toBe('')
     })
   })
 

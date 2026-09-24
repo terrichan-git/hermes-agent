@@ -451,7 +451,29 @@
        at full transparency the outline is what still marks your turn.
        The fill itself is the shared tint surface, so the sent-prompt bubble and
        the clarify Q&A widget are the same colour register by construction. */
-    --dt-user-bubble: color-mix(in srgb, var(--ui-tint-surface-background) var(--user-bubble-keep, 100%), transparent);
+    /* The sent-prompt bubble. The INK is the switch — a skin that supplies
+       `userBubbleForeground` wants a solid invert (e.g. Codex: black fill, white
+       ink), and everything else keeps the shared tint exactly as before:
+
+       - No ink (every pre-existing theme): the shared tint surface at the user's
+         chosen translucency, unchanged. The FILL var alone cannot be the switch:
+         a legacy theme's `userBubble` is a *seed* styles.css mixes into the
+         neutral card, so treating it as a flat fill would silently repaint every
+         existing theme.
+       - Ink set (Codex): a FLAT fill from `userBubble`. The tint path cannot
+         express the invert — it dilutes the seed toward white, so black would
+         arrive as a pale wash — and the ink must travel with it, because a solid
+         dark fill under the transcript foreground would be unreadable.
+
+       `--dt-user-bubble-solid` is set by JS (theme context) ONLY when the theme
+       supplies both, because "use the flat fill iff an ink exists" is not
+       expressible in a var() chain: the ink is a different variable from the
+       fill, and a nested var() cannot test for its presence. */
+    --dt-user-bubble: var(
+      --dt-user-bubble-solid,
+      color-mix(in srgb, var(--ui-tint-surface-background) var(--user-bubble-keep, 100%), transparent)
+    );
+    --dt-user-bubble-ink: var(--theme-user-bubble-foreground, var(--dt-foreground));
     --dt-user-bubble-border: var(--ui-stroke-tertiary);
 
     --dt-font-sans:

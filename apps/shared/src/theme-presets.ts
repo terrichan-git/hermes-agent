@@ -47,6 +47,13 @@ export interface ThemePresetColors {
   sidebarBorder?: string
   userBubble?: string
   userBubbleBorder?: string
+  /**
+   * Ink for the sent-message bubble. Set WITH `userBubble` to paint the bubble
+   * as a SOLID fill instead of the app's 45%-mix tint — the tint can only ever
+   * produce a pale wash, so a skin wanting a true invert (black fill, white
+   * ink) needs this. Unset keeps every existing skin's rendering unchanged.
+   */
+  userBubbleForeground?: string
 }
 
 export interface ThemePresetPalette {
@@ -602,18 +609,18 @@ export const THEME_PRESET_PALETTES = {
       destructiveForeground: '#ffffff',
       sidebarBackground: '#f0f1f1',
       sidebarBorder: '#e3e4e6',
-      // IMPORTANT: the seed is NOT what renders. `--theme-bubble-seed` is mixed
-      // 45% into `--theme-neutral-card` (#fcfcfc) by styles.css, so the visible
-      // fill is much lighter than this hex:
-      //     #7a7a7a seed  →  renders #c2c2c2  (≈8.5:1 ink)
-      // Codex's own bubble is pure black, but this app paints the bubble as a
-      // *tint* over the canvas with the theme foreground as ink — so a black
-      // seed renders as a muddy mid-grey at only 4.7:1, and a true black fill
-      // with white text is not reachable from a preset (see GAP-AUDIT.md,
-      // Stage 2). This seed is chosen so the rendered fill is a clean, clearly
-      // visible neutral with comfortable ink contrast.
-      userBubble: '#7a7a7a',
-      userBubbleBorder: '#7a7a7a'
+      // A SOLID invert, not the tint: the design's bubble is pure black fill
+      // with white ink, and that contrast is the point of the transcript.
+      // Setting `userBubbleForeground` is what switches styles.css off the
+      // 45%-mix path (which could only ever produce a pale wash here) onto a
+      // flat fill, so the ink now travels with the fill — the two are set
+      // together or not at all.
+      //     #000000 fill + #ffffff ink  →  21:1, AAA
+      // In dark mode the bubble inverts the other way (see below), so the pair
+      // reads as "your turn" in both modes without being the same colour.
+      userBubble: '#000000',
+      userBubbleForeground: '#ffffff',
+      userBubbleBorder: '#000000'
     },
     darkColors: {
       background: '#0d0d0d',
@@ -640,11 +647,14 @@ export const THEME_PRESET_PALETTES = {
       destructiveForeground: '#0d0d0d',
       sidebarBackground: '#0d0d0d',
       sidebarBorder: '#2a2a2a',
-      // Same 46%-into-#161618 mix as light, inverted: the visible fill is a lift
-      // off the dark canvas rather than a bright plate. `#6a6a6a` renders
-      // ≈#3d3d3e (8.4:1 ink, 1.8:1 against the canvas).
-      userBubble: '#6a6a6a',
-      userBubbleBorder: '#6a6a6a'
+      // The invert, other way up: the canvas here is #0d0d0d, so a black bubble
+      // would be invisible. Codex's own dark transcript flips to a light plate
+      // with dark ink, which is the same "your turn is a solid block" reading
+      // as light mode rather than a washed tint.
+      //     #ececec fill + #0d0d0d ink  →  17.6:1, AAA
+      userBubble: '#ececec',
+      userBubbleForeground: '#0d0d0d',
+      userBubbleBorder: '#ececec'
     }
   }
 } satisfies Record<string, ThemePresetPalette>
