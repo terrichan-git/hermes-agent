@@ -117,6 +117,50 @@ describe('ThemeProvider highlight preview', () => {
       </ThemeProvider>
     )
 
+  // The codex preset is only as good as what `applyTheme` actually writes. These
+  // drive the real provider and assert the derived chain, because the preset's
+  // own hexes are seeds — `--dt-primary` and the bubble fill are both computed
+  // downstream, and a preset can look correct in the table while painting
+  // something else entirely.
+  describe('codex preset paints the derived tokens', () => {
+    it('seeds the link/error roles', () => {
+      renderProbe()
+
+      act(() => ctx.previewTheme('codex', 'light'))
+
+      expect(cssVar('--theme-primary')).toBe('#1f6ae0')
+      expect(cssVar('--dt-destructive')).toBe('#cc4034')
+      // NOTE: `--dt-primary` is *not* asserted here. It is a CSS declaration
+      // (`--dt-primary: var(--theme-primary)` in styles.css), so it is empty in
+      // `style.getPropertyValue` — jsdom does not resolve the var() chain. The
+      // seed above is the real contract; `.ref` links resolve --dt-primary →
+      // --theme-primary at paint time.
+      expect(cssVar('--dt-primary')).toBe('')
+    })
+
+    it('lifts the accent for dark rather than reusing the light blue', () => {
+      renderProbe()
+
+      act(() => ctx.previewTheme('codex', 'dark'))
+
+      expect(cssVar('--theme-primary')).toBe('#6ea8ff')
+      expect(cssVar('--dt-destructive')).toBe('#ff8a7a')
+      // Dark canvas + light-alpha hairlines: the inversion is the point.
+      expect(cssVar('--theme-background-seed')).toBe('#0d0d0d')
+      expect(cssVar('--theme-foreground')).toBe('#ececec')
+    })
+
+    it('feeds the bubble seed that styles.css mixes down to the visible fill', () => {
+      renderProbe()
+
+      act(() => ctx.previewTheme('codex', 'light'))
+      expect(cssVar('--theme-bubble-seed')).toBe('#7a7a7a')
+
+      act(() => ctx.previewTheme('codex', 'dark'))
+      expect(cssVar('--theme-bubble-seed')).toBe('#6a6a6a')
+    })
+  })
+
   it('paints the previewed theme without persisting it', () => {
     renderProbe()
 

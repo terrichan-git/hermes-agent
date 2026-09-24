@@ -155,6 +155,33 @@ renderer and Electron's first window paint.
 Never hardcode `border-gray-*`, `bg-white`, `text-black`, etc. The white tile in
 `BrandMark` is the one sanctioned literal (the mark needs a fixed backdrop).
 
+### Presets
+
+Built-in skins live in `src/themes/presets.ts`, backed by the shared palette table
+`apps/shared/src/theme-presets.ts` (`THEME_PRESET_PALETTES`) — edit colours there and
+**both** the desktop and the web dashboard follow. A preset is a data object; it can
+only set colour, typography and terminal ANSI, so it cannot reach into components.
+
+**`codex`** is the one preset with a stated visual contract: it reproduces OpenAI's
+Codex desktop app, whose colour is strictly functional — three roles and no more.
+Chrome stays grey; the accent never spreads to surfaces.
+
+| Role | Light | Dark | Notes |
+| --- | --- | --- | --- |
+| link / active (`primary`) | `#1f6ae0` | `#6ea8ff` | text-safe variant of Codex's `#2478f0` (which is only 4.18:1 on white) |
+| error (`destructive`) | `#cc4034` | `#ff8a7a` | a muted brick red, never alarm-red |
+| user bubble | `#7a7a7a` seed | `#6a6a6a` seed | **the seed is not what renders** — see below |
+
+**The bubble seed is not the bubble.** `--theme-bubble-seed` is mixed
+`--theme-mix-bubble` (45% light / 46% dark) into `--theme-neutral-card`, so the visible
+fill is far lighter than the hex in the table: `#7a7a7a` renders `#c2c2c2`. Codex's own
+bubble is a true black fill with white ink, but this app paints the bubble as a *tint
+over the canvas* with the theme foreground as ink — so a black seed renders as a muddy
+mid-grey at only 4.7:1, and a true black bubble is **not reachable from a preset**.
+Reaching it needs the bubble fill/ink split into their own tokens (Stage 2; see
+`~/hermes-redesign/GAP-AUDIT.md`). `presets.test.ts` models the mix so this cannot
+silently regress.
+
 ## Buttons — one component
 
 `src/components/ui/button.tsx` is the single source. Pick a `variant` + `size`;

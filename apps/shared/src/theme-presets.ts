@@ -549,6 +549,103 @@ export const THEME_PRESET_PALETTES = {
       userBubble: '#1e2a38',
       userBubbleBorder: '#2e4060'
     }
+  },
+
+  /**
+   * Codex — OpenAI's Codex desktop app, measured off the shipping product.
+   *
+   * Read off real screenshots rather than invented: canvas `#ffffff`, sidebar
+   * `#f0f1f1` (a neutral cool grey, not GitHub's warm `#f6f8fa`), body ink
+   * `#1a1c1f` (a cool near-black — Codex never uses pure `#000` for text),
+   * hairline `rgba(0,0,0,.10)`.
+   *
+   * Codex is overwhelmingly monochrome, and its colour is strictly functional —
+   * three roles and no more:
+   *   · links / active affordances  → `#1f6ae0` (claimed by `primary`)
+   *   · errors / destructive        → `#cc4034` (a muted brick red, NOT alarm-red)
+   *   · the user's own message       → pure `#000000` fill
+   * Everything else is grey. Chrome never takes the accent.
+   *
+   * On the link blue: the raw pixel measured off Codex is `#2478f0`, but that is
+   * only 4.18:1 on white — under AA for text. `primary` drives *prose text links*
+   * in this app (`.ref` → `--dt-primary`), so it takes the design's own text-safe
+   * variant `#1f6ae0` (5.00:1). `#2478f0` remains the fill/graphic blue in the
+   * source design; the two are visually near-identical, so nothing is lost.
+   *
+   * Dark is a true inversion: canvas `#0d0d0d`, ink `#ececec`, hairlines flip to
+   * white alpha, and the blue lifts to `#6ea8ff` to clear AA on a near-black
+   * ground (the same hue, not a different colour).
+   */
+  codex: {
+    colors: {
+      background: '#ffffff',
+      foreground: '#1a1c1f',
+      card: '#f7f7f7',
+      cardForeground: '#1a1c1f',
+      muted: '#f0f1f1',
+      mutedForeground: '#5d5d5d',
+      popover: '#ffffff',
+      popoverForeground: '#1a1c1f',
+      primary: '#1f6ae0',
+      primaryForeground: '#ffffff',
+      secondary: '#eceef0',
+      secondaryForeground: '#1a1c1f',
+      accent: '#eef1f4',
+      accentForeground: '#1a1c1f',
+      border: '#e3e4e6',
+      input: '#ffffff',
+      ring: '#1f6ae0',
+      midground: '#1f6ae0',
+      midgroundForeground: '#ffffff',
+      composerRing: '#1f6ae0',
+      destructive: '#cc4034',
+      destructiveForeground: '#ffffff',
+      sidebarBackground: '#f0f1f1',
+      sidebarBorder: '#e3e4e6',
+      // IMPORTANT: the seed is NOT what renders. `--theme-bubble-seed` is mixed
+      // 45% into `--theme-neutral-card` (#fcfcfc) by styles.css, so the visible
+      // fill is much lighter than this hex:
+      //     #7a7a7a seed  →  renders #c2c2c2  (≈8.5:1 ink)
+      // Codex's own bubble is pure black, but this app paints the bubble as a
+      // *tint* over the canvas with the theme foreground as ink — so a black
+      // seed renders as a muddy mid-grey at only 4.7:1, and a true black fill
+      // with white text is not reachable from a preset (see GAP-AUDIT.md,
+      // Stage 2). This seed is chosen so the rendered fill is a clean, clearly
+      // visible neutral with comfortable ink contrast.
+      userBubble: '#7a7a7a',
+      userBubbleBorder: '#7a7a7a'
+    },
+    darkColors: {
+      background: '#0d0d0d',
+      foreground: '#ececec',
+      card: '#151515',
+      cardForeground: '#ececec',
+      muted: '#1a1a1a',
+      mutedForeground: '#a0a0a0',
+      popover: '#151515',
+      popoverForeground: '#ececec',
+      primary: '#6ea8ff',
+      primaryForeground: '#0d0d0d',
+      secondary: '#212121',
+      secondaryForeground: '#ececec',
+      accent: '#1c1c1c',
+      accentForeground: '#ececec',
+      border: '#2a2a2a',
+      input: '#151515',
+      ring: '#6ea8ff',
+      midground: '#6ea8ff',
+      midgroundForeground: '#0d0d0d',
+      composerRing: '#6ea8ff',
+      destructive: '#ff8a7a',
+      destructiveForeground: '#0d0d0d',
+      sidebarBackground: '#0d0d0d',
+      sidebarBorder: '#2a2a2a',
+      // Same 46%-into-#161618 mix as light, inverted: the visible fill is a lift
+      // off the dark canvas rather than a bright plate. `#6a6a6a` renders
+      // ≈#3d3d3e (8.4:1 ink, 1.8:1 against the canvas).
+      userBubble: '#6a6a6a',
+      userBubbleBorder: '#6a6a6a'
+    }
   }
 } satisfies Record<string, ThemePresetPalette>
 

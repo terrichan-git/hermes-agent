@@ -1,8 +1,10 @@
+import { contrastRatio, mix } from '@hermes/shared/color'
 import { describe, expect, it } from 'vitest'
 
 import {
   BUILTIN_THEME_LIST,
   BUILTIN_THEMES,
+  codexTheme,
   DEFAULT_SKIN_NAME,
   DEFAULT_TYPOGRAPHY,
   EMOJI_FALLBACK,
@@ -48,5 +50,75 @@ describe('nous-alt is the retired Nous, not the default', () => {
     expect(BUILTIN_THEMES.nous).not.toBe(nousAltTheme)
     expect(nousAltTheme.darkColors?.background).toBe('#0D2F86')
     expect(BUILTIN_THEMES.nous.darkColors?.background).not.toBe(nousAltTheme.darkColors?.background)
+  })
+})
+
+// Codex is a light+dark preset whose whole point is that its *two* accent roles
+// stay legible and stay distinguishable. These lock in the contrast decisions
+// against a future hand-tune that "just makes the blue nicer".
+describe('codex preset stays legible and monochrome', () => {
+  const codex = BUILTIN_THEMES.codex
+
+  it('is registered with both a light and a hand-tuned dark palette', () => {
+    expect(codex).toBe(codexTheme)
+    expect(codex.darkColors).toBeDefined()
+  })
+
+  // Regression: the pixel-measured Codex blue is #2478f0, but that is 4.18:1 on
+  // white — below AA for text — and `primary` drives prose links here. The text
+  // variant (#1f6ae0) must stay in place; reverting to the raw pixel value
+  // re-breaks link legibility.
+  it.each([
+    ['light', () => codex.colors],
+    ['dark', () => codex.darkColors!]
+  ])('%s: primary reads AA on the canvas', (_mode, pick) => {
+    const c = pick()
+    expect(contrastRatio(c.primary, c.background)).toBeGreaterThanOrEqual(4.5)
+  })
+
+  it.each([
+    ['light', () => codex.colors],
+    ['dark', () => codex.darkColors!]
+  ])('%s: destructive reads AA on the canvas', (_mode, pick) => {
+    const c = pick()
+    expect(contrastRatio(c.destructive, c.background)).toBeGreaterThanOrEqual(4.5)
+  })
+
+  // The bubble is the one token where the seed is NOT what renders: styles.css
+  // mixes `--theme-bubble-seed` 45%/46% into `--theme-neutral-card`, so a naive
+  // assertion on `userBubble` would pass while the visible bubble was unreadable.
+  // These model the real pipeline (see --theme-mix-bubble / --theme-neutral-card).
+  describe('user bubble renders readably after the seed mix', () => {
+    // sRGB mix, exactly matching `color-mix(in srgb, seed N%, card)`.
+    const renderedBubble = (seed: string, card: string, pct: number) => mix(card, seed, pct)
+
+    it.each([
+      ['light', '#7a7a7a', '#fcfcfc', 0.45, '#1a1c1f', 4.5],
+      ['dark', '#6a6a6a', '#161618', 0.46, '#ececec', 4.5]
+    ])('%s: bubble fill clears AA against its ink', (_mode, seed, card, pct, fg, min) => {
+      const fill = renderedBubble(seed, card, pct)
+      expect(contrastRatio(fg, fill) ?? 0).toBeGreaterThanOrEqual(min)
+    })
+
+    // The bubble must also be *distinguishable from the canvas* or it reads as
+    // no bubble at all. The current nous bubble is 1.12:1 against its canvas —
+    // visible only because it is tinted, not because it is far from white.
+    it.each([
+      ['light', '#7a7a7a', '#fcfcfc', 0.45, '#ffffff'],
+      ['dark', '#6a6a6a', '#161618', 0.46, '#0d0d0d']
+    ])('%s: bubble separates from the canvas', (_mode, seed, card, pct, canvas) => {
+      const fill = renderedBubble(seed, card, pct)
+      expect(contrastRatio(fill, canvas) ?? 0).toBeGreaterThan(1.4)
+    })
+  })
+
+  // The palette is the design's contract, and it is the thing most tempting to
+  // "improve" by hand. These are the measured values.
+  it('holds the measured Codex neutrals', () => {
+    expect(codex.colors.background).toBe('#ffffff')
+    expect(codex.colors.sidebarBackground).toBe('#f0f1f1')
+    expect(codex.colors.foreground).toBe('#1a1c1f')
+    expect(codex.darkColors!.background).toBe('#0d0d0d')
+    expect(codex.darkColors!.foreground).toBe('#ececec')
   })
 })
