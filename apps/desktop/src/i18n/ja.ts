@@ -609,6 +609,8 @@ export const ja = defineLocale({
       backdropDesc: '会話の背後に表示される淡い彫像の画像。',
       userBubbleTitle: 'メッセージの吹き出し',
       userBubbleDesc: '自分のメッセージの透け具合。0 で不透明、100 で枠線だけが残ります。',
+      designV2Title: 'Codex 風インターフェース',
+      designV2Desc: '再設計されたインターフェースをプレビューします：グループ化されたサイドバー、吹き出しと本文の会話、再構成された入力欄。オフで現在のデザインのまま。',
       introSplashTitle: 'イントロ表示',
       introSplashDesc: '空のチャットに表示されるワードマークとプロンプト。',
       reactionsTitle: 'メッセージリアクション',

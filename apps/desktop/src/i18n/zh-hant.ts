@@ -589,6 +589,8 @@ export const zhHant = defineLocale({
       backdropDesc: '對話後方那張淡淡的雕像圖片。',
       userBubbleTitle: '訊息氣泡',
       userBubbleDesc: '你自己的訊息有多透明。0 為不透明，100 時只保留邊框。',
+      designV2Title: 'Codex 風格介面',
+      designV2Desc: '預覽重新設計的介面：分組側欄、氣泡與正文對話、重構的輸入框。關閉則保留目前設計。',
       introSplashTitle: '開場標識',
       introSplashDesc: '空白對話中顯示的字標和提示語。',
       reactionsTitle: '訊息回應',

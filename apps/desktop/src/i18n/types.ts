@@ -903,6 +903,8 @@ export interface Translations {
       backdropDesc: string
       userBubbleTitle: string
       userBubbleDesc: string
+      designV2Title: string
+      designV2Desc: string
       introSplashTitle: string
       introSplashDesc: string
       reactionsTitle: string

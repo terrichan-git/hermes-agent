@@ -14,6 +14,7 @@ export type CredentialSettingsView = 'settings' | 'tools'
 export const APPEARANCE_SETTING_IDS = {
   appActions: 'appearance.app-actions',
   backdrop: 'appearance.backdrop',
+  designV2: 'appearance.design-v2',
   embeds: 'appearance.embeds',
   hideCodeDiffs: 'appearance.hide-code-diffs',
   hideThreadTimeline: 'appearance.hide-thread-timeline',

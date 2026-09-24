@@ -1097,6 +1097,8 @@ export const en: Translations = {
       backdropDesc: 'The faint statue image behind the conversation.',
       userBubbleTitle: 'Message Bubble',
       userBubbleDesc: 'How see-through your own messages are. Solid at 0; only the outline remains at 100.',
+      designV2Title: 'Codex-style interface',
+      designV2Desc: 'Preview the redesigned interface: grouped rail, bubble-and-prose transcript, restructured composer. Off keeps the current design.',
       introSplashTitle: 'Intro Splash',
       introSplashDesc: 'The wordmark and prompt shown on an empty chat.',
       reactionsTitle: 'Message Reactions',

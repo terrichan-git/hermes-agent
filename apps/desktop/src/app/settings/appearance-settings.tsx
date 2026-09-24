@@ -16,6 +16,7 @@ import { normalize } from '@/lib/text'
 import { cn } from '@/lib/utils'
 import { $backdrop, setBackdrop } from '@/store/backdrop'
 import { $composerPopoutGesturesEnabled, setComposerPopoutGesturesEnabled } from '@/store/composer-popout'
+import { $designV2, setDesignV2 } from '@/store/design-v2'
 import { $embedAllowed, $embedMode, clearEmbedAllowed, type EmbedMode, setEmbedMode } from '@/store/embed-consent'
 import {
   $interfaceMode,
@@ -420,6 +421,7 @@ export function AppearanceSettings({ subpage }: AppearanceSettingsProps = {}) {
   const hideCodeDiffs = useStore($hideCodeDiffs)
   const hideCodeDiffsShadowed = useStore($modeShadowed('hideCodeDiffs'))
   const hideThreadTimeline = useStore($hideThreadTimeline)
+  const designV2 = useStore($designV2)
   const reasoningCollapsedByDefault = useStore($reasoningCollapsedByDefault)
   const reasoningCollapsedShadowed = useStore($modeShadowed('reasoningCollapsedByDefault'))
   const interfaceMode = useStore($interfaceMode)
@@ -878,6 +880,17 @@ export function AppearanceSettings({ subpage }: AppearanceSettingsProps = {}) {
               id={appearanceSettingElementId(APPEARANCE_SETTING_IDS.userBubble)}
               title={a.userBubbleTitle}
             />
+          )}
+
+          {show('general') && (
+            <div id={appearanceSettingElementId(APPEARANCE_SETTING_IDS.designV2)}>
+              <ToggleRow
+                checked={designV2}
+                description={a.designV2Desc}
+                label={a.designV2Title}
+                onChange={on => setDesignV2(on)}
+              />
+            </div>
           )}
 
           {show('window-layout') && (

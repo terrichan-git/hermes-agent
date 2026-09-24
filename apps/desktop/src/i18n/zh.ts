@@ -799,6 +799,8 @@ export const zh = defineLocale({
       backdropDesc: '对话后方那张淡淡的雕像图片。',
       userBubbleTitle: '消息气泡',
       userBubbleDesc: '你自己的消息有多透明。0 为不透明，100 时只保留边框。',
+      designV2Title: 'Codex 风格界面',
+      designV2Desc: '预览重新设计的界面：分组侧栏、气泡与正文对话、重构的输入框。关闭则保留当前设计。',
       introSplashTitle: '开场标识',
       introSplashDesc: '空白对话中显示的字标和提示语。',
       reactionsTitle: '消息回应',

@@ -642,6 +642,8 @@ export const ar = defineLocale({
       backdropDesc: 'اختيار مقدار مزج خلفية سطح المكتب مع سطح Hermes.',
       userBubbleTitle: 'فقاعة الرسالة',
       userBubbleDesc: 'مدى شفافية رسائلك. معتمة عند 0؛ يبقى الإطار فقط عند 100.',
+      designV2Title: 'واجهة بنمط Codex',
+      designV2Desc: 'معاينة الواجهة المعاد تصميمها: شريط جانبي مجمّع، محادثة بفقاعات ونص، وصندوق إدخال مُعاد تنظيمه. الإيقاف يُبقي التصميم الحالي.',
       introSplashTitle: 'شاشة المقدمة',
       introSplashDesc: 'الشعار النصي والعبارة التمهيدية في محادثة فارغة.',
       reactionsTitle: 'تفاعلات الرسائل',
