@@ -108,6 +108,7 @@ import { HudShell } from '../hud/hud-shell'
 import { $terminalTakeover, setTerminalTakeover } from '../right-sidebar/store'
 import { $workspaceIsPage, WORKSPACE_PAGE_HEADER_AREA } from '../routes'
 
+import { watchDesignV2Layout } from './design-v2-layout'
 import { BASIC_TREE, DEFAULT_TREE, registerLayoutPresets } from './layout-presets'
 import { bindLayoutSides } from './layout-sides'
 import { FilesPane, LogsPane, ReviewPaneContent } from './panes'
@@ -476,6 +477,14 @@ watchSessionPins()
 
 // Release unread-write guards once a list page confirms the value we wrote.
 watchUnreadWriteGuard()
+
+// Design v2: swap the pane arrangement when the redesign preference is on, and
+// put the user's own arrangement back when it is off. Guarded like the tile
+// watchers above — the popped-out Browser and the HUD have no layout tree, so
+// applying an arrangement there would be meaningless.
+if (!isBrowserWindow() && !isHudWindow()) {
+  watchDesignV2Layout()
+}
 
 // The main tab reads as its SESSION (the loaded title, "New session" on a
 // fresh draft) — a stack of main + tiles is then just a row of session names.

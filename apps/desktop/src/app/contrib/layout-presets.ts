@@ -1,6 +1,8 @@
 import { group, mirrorTreeHorizontal, split } from '@/components/pane-shell/tree/model'
 import { registerBundledPresets } from '@/components/pane-shell/tree/presets'
 
+import { codexTree } from './codex-layout'
+
 // ---------------------------------------------------------------------------
 // Layout presets — CHAT (main) always dominates.
 // ---------------------------------------------------------------------------
@@ -83,6 +85,13 @@ const QUAD_TREE = split(
   [3, 1]
 )
 
+// ---------------------------------------------------------------------------
+// Design v2 — the Codex-style shell (see $designV2 in @/store/design-v2).
+// The arrangement itself lives in ./codex-layout so the flag can reach it
+// without going through this shelf; see that file for what a tree can and
+// cannot express from the v4 grid.
+// ---------------------------------------------------------------------------
+
 export function registerLayoutPresets() {
   // Simple is always the Basic arrangement; its one choice is which side the
   // sidebar sits. The decks are Advanced — arranging tooling is the point.
@@ -100,6 +109,12 @@ export function registerLayoutPresets() {
     { id: 'basic', title: 'Basic', order: 5, tree: BASIC_TREE, resting: BASIC_RESTING, tier: 'advanced' },
     { id: 'focus', title: 'Focus', order: 10, tree: FOCUS_TREE, resting: ['terminal'], tier: 'advanced' },
     { id: 'terminal-deck', title: 'Terminal deck', order: 20, tree: TERMINAL_TREE, tier: 'advanced' },
-    { id: 'quad', title: 'Quad', order: 30, tree: QUAD_TREE, tier: 'advanced' }
+    { id: 'quad', title: 'Quad', order: 30, tree: QUAD_TREE, tier: 'advanced' },
+    // Applied by the design-v2 preference, not picked from the layout shelf:
+    // it is the arrangement of the redesigned interface, so exposing it as an
+    // ordinary layout choice would let a user reach the new shell's geometry
+    // without the rest of the redesign (and vice versa) — the half-on state
+    // that having one flag exists to prevent.
+    { id: 'codex', title: 'Codex', order: 40, tree: codexTree().codex, tier: 'advanced' }
   ])
 }
