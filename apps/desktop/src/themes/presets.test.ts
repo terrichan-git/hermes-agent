@@ -4,11 +4,21 @@ import { describe, expect, it } from 'vitest'
 import {
   BUILTIN_THEME_LIST,
   BUILTIN_THEMES,
+  catppuccinTheme,
   codexTheme,
+  cyberpunkTheme,
   DEFAULT_SKIN_NAME,
   DEFAULT_TYPOGRAPHY,
+  emberTheme,
   EMOJI_FALLBACK,
-  nousAltTheme
+  everforestTheme,
+  githubTheme,
+  midnightTheme,
+  monoTheme,
+  nousAltTheme,
+  nousTheme,
+  slateTheme,
+  solarizedTheme
 } from './presets'
 
 // #40364: none of the UI text/mono fonts carry emoji glyphs, so every font
@@ -120,5 +130,35 @@ describe('codex preset stays legible and monochrome', () => {
     expect(codex.colors.foreground).toBe('#1a1c1f')
     expect(codex.darkColors!.background).toBe('#0d0d0d')
     expect(codex.darkColors!.foreground).toBe('#ececec')
+  })
+})
+
+// Authoring a theme and REGISTERING it are two separate steps, and the registry
+// is the one that is easy to forget: a theme can exist, export cleanly, typecheck,
+// and pass every palette test while rendering nowhere, because nothing added it to
+// BUILTIN_THEMES. The picker renders `availableThemes` ← SKIN_LIST ← that map, so
+// an unregistered theme is invisible with no error anywhere — and a test that
+// imports the theme directly never notices, because it bypasses the registry.
+describe('every shipped preset is reachable from the picker', () => {
+  it.each([
+    ['nous', nousTheme],
+    ['github', githubTheme],
+    ['catppuccin', catppuccinTheme],
+    ['everforest', everforestTheme],
+    ['solarized', solarizedTheme],
+    ['nous-alt', nousAltTheme],
+    ['codex', codexTheme],
+    ['midnight', midnightTheme],
+    ['ember', emberTheme],
+    ['mono', monoTheme],
+    ['slate', slateTheme],
+    ['cyberpunk', cyberpunkTheme]
+  ])('%s is registered under its own name', (name, theme) => {
+    expect(theme.name).toBe(name)
+    expect(BUILTIN_THEMES[name]).toBe(theme)
+  })
+
+  it('BUILTIN_THEME_LIST is exactly the registered themes', () => {
+    expect(BUILTIN_THEME_LIST).toEqual(Object.values(BUILTIN_THEMES))
   })
 })
