@@ -356,6 +356,14 @@ so glass and message-bubble transparency do not reveal scrolling text.
   so they cannot disagree about visibility, and neither may steal the accent or
   move focus. The up-pill is a convenience for re-reading a long streamed
   answer; it targets the newest assistant turn, never the transcript top.
+  Both controls must move the viewport **through the transcript's own
+  anchor/restore machinery** (`jumpRestoreRef` / `jumpToOffsetRef`), never by
+  writing `scrollTop` directly: that machinery re-applies the stored reading
+  position on every scroll and ResizeObserver tick, so a direct write is undone
+  a frame later and the control reads as dead. The up-pill therefore converts
+  its target turn's geometry into a distance-from-bottom offset and hands it
+  over, which also keeps the landing point stable when older turns are prepended
+  above during the budget backfill.
 - Tool rows reserve destructive red for explicit failures. Missing read paths and
   ambiguous exit-1 results use neutral notices, with details still available.
   Errors described inside returned data are not tool failures. Expanded failures

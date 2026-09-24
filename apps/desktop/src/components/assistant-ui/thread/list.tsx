@@ -589,6 +589,11 @@ const ThreadMessageListInner: FC<ThreadMessageListProps> = ({
   const windowRequestRef = useRef<object | null>(null)
   const windowCommitRef = useRef<string | null>(null)
   const jumpRestoreRef = useRef<(() => void) | null>(null)
+  // Same idea as `jumpRestoreRef`, but for landing on a reading position
+  // (distance from the bottom) instead of the bottom itself. The scroll-up
+  // button hands its target here so the restore machinery — not the caller —
+  // applies and holds it.
+  const jumpToOffsetRef = useRef<((fromBottom: number) => void) | null>(null)
   const isRunning = useAuiState(s => s.thread.isRunning)
   // Session the settle loop last armed for, so a re-arm within the same load
   // is distinguishable from a switch to a different transcript.
@@ -752,14 +757,21 @@ const ThreadMessageListInner: FC<ThreadMessageListProps> = ({
   )
 
   // Floating scroll-up button → the START of the last assistant output. The
-  // target is the newest turn pair's first row, not the turn's human prompt and
-  // not the top of the transcript: reading back means landing on the answer you
-  // just got, with its prompt still visible above it as context.
+  // target is the newest turn that holds assistant output, not the turn's human
+  // prompt and not the top of the transcript: reading back means landing on the
+  // answer you just got, with its prompt visible above as context.
+  //
+  // This must NOT write `scrollTop` itself. The transcript's anchor/restore
+  // machinery owns the position: it re-applies `liveScrollStateRef` on every
+  // scroll and ResizeObserver tick, so a one-shot write from here is silently
+  // undone a frame later — symptom: a button that looks dead. Instead classify
+  // where the turn sits as a distance-from-bottom and hand it to
+  // `jumpToOffsetRef`, the same way the working bottom-jump uses
+  // `jumpRestoreRef`.
   //
   // Resolved from the DOM rather than from `rows` because the last turn may be
   // virtualized or not yet measured when the click lands; querying the live
-  // viewport uses whatever geometry the browser has right now. `CSS.escape` is
-  // unavailable in jsdom, so the data-slot selector needs no escaping.
+  // viewport uses whatever geometry the browser has right now.
   useEffect(
     () =>
       onScrollToTopOfLastOutputRequest(() => {
@@ -775,54 +787,42 @@ const ThreadMessageListInner: FC<ThreadMessageListProps> = ({
           return
         }
 
-        // Search BACKWARD for the last turn that actually holds assistant
-        // output. A trailing turn can be a bare user prompt whose reply hasn't
-        // started; its own top is a fine target then. The scan only ever walks
-        // mounted rows, so it stays O(mounted) on a long transcript.
-        let last: HTMLElement | null = null
+        // The LAST turn that actually holds assistant output. A trailing turn
+        // can be a bare user prompt whose reply hasn't started; its own top is a
+        // fine target then. Only mounted rows are walked, so this stays
+        // O(mounted) on a long transcript.
         let lastAssistant: HTMLElement | null = null
 
         for (const turn of turns) {
-          last = turn
-
           if (turn.querySelector('[data-role="assistant"]')) {
             lastAssistant = turn
           }
         }
 
-        const target = lastAssistant ?? last
+        const node = lastAssistant ?? turns[turns.length - 1]
 
-        if (!target) {
+        if (!node) {
           return
         }
 
-        // Follow-the-bottom is armed by stick-to-bottom; an explicit jump is a
-        // deliberate departure from it, so release the follow before moving.
-        stopScroll()
-
-        const start = viewport.scrollTop
-
-        const destination = Math.max(
+        // Express the turn's top the way the restore machinery stores reading
+        // positions: distance from the BOTTOM edge. Bottom-anchored math is what
+        // survives older turns being prepended above during the budget backfill.
+        //
+        // fromBottom' = scrollHeight - scrollTop' - clientHeight, with
+        // scrollTop' = scrollTop + (nodeTop - viewportTop) — i.e. the scrollTop
+        // that puts the turn's top flush with the viewport's top edge.
+        const fromBottom = Math.max(
           0,
-          start + target.getBoundingClientRect().top - viewport.getBoundingClientRect().top - 8
+          viewport.scrollHeight -
+            viewport.scrollTop -
+            (node.getBoundingClientRect().top - viewport.getBoundingClientRect().top) -
+            viewport.clientHeight
         )
 
-        const duration = matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 170
-        const began = performance.now()
-
-        const step = (now: number) => {
-          const progress = duration ? Math.min(1, (now - began) / duration) : 1
-
-          viewport.scrollTop = start + (destination - start) * (1 - (1 - progress) ** 3)
-
-          if (progress < 1) {
-            requestAnimationFrame(step)
-          }
-        }
-
-        requestAnimationFrame(step)
+        jumpToOffsetRef.current?.(fromBottom)
       }, scrollSessionId),
-    [scrollRef, scrollSessionId, stopScroll]
+    [scrollRef, scrollSessionId]
   )
 
   // Waking from display: hidden (HUD mode hides the main window; OS hide does
@@ -1231,6 +1231,29 @@ const ThreadMessageListInner: FC<ThreadMessageListProps> = ({
       void scrollToBottomUnlessSelecting('instant')
     }
 
+    // Land on a reading position handed in by the scroll-up button. Mirrors
+    // `jumpRestoreRef`: classify the target as an offset-from-bottom, adopt it
+    // as the live state, and let the anchor/restore machinery apply and hold it
+    // across the resize ticks that would otherwise undo a one-shot write.
+    jumpToOffsetRef.current = (fromBottom: number) => {
+      cancelRestore()
+
+      target = { fromBottom, kind: 'offset' }
+      restoreFromBottomRef.current = null
+      liveScrollStateRef.current = target
+
+      applyRestoreRef.current = () => {
+        applyTarget(el)
+      }
+
+      loadSettledRef.current = true
+      applyTarget(el)
+
+      if (contentRef.current) {
+        resizeObserver.observe(contentRef.current)
+      }
+    }
+
     el.addEventListener('wheel', onWheel, { passive: true })
     el.addEventListener('scroll', onScroll, { passive: true })
     el.addEventListener('pointerdown', cancelRestore, { passive: true })
@@ -1241,6 +1264,7 @@ const ThreadMessageListInner: FC<ThreadMessageListProps> = ({
       applyRestoreRef.current = null
       resizeObserver.disconnect()
       jumpRestoreRef.current = null
+      jumpToOffsetRef.current = null
       el.removeEventListener('wheel', onWheel)
       el.removeEventListener('scroll', onScroll)
       el.removeEventListener('pointerdown', cancelRestore)

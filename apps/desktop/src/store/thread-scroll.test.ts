@@ -10,7 +10,9 @@ import {
   requestScrollToBottom,
   resetPublishedThreadScroll,
   resetThreadScroll,
-  setThreadAtBottom
+  setThreadAtBottom,
+  threadScrollDistanceFromBottom,
+  threadScrollTargetTop
 } from './thread-scroll'
 
 afterEach(() => {
@@ -128,5 +130,57 @@ describe('requestScrollToBottom', () => {
     expect(first).not.toHaveBeenCalled()
     expect(second).toHaveBeenCalledOnce()
     stopSecond()
+  })
+})
+
+// The scroll-up button lands on a turn's top by converting that turn's geometry
+// into a from-bottom offset and letting the restore machinery re-apply it. An
+// offset computed in the wrong frame still looks plausible — it just lands the
+// reader somewhere else — so pin the round trip: geometry in, same scrollTop
+// out. (A missing `scrollTop` term here silently sends the reader a full
+// viewport too far up, which reads as "the button did something odd".)
+describe('threadScrollDistanceFromBottom ↔ threadScrollTargetTop', () => {
+  const metrics = { clientHeight: 600, scrollHeight: 4000 }
+
+  it('round-trips a node positioned at the viewport top', () => {
+    // Node top flush with the viewport top → the scrollTop that shows it is
+    // just the current scrollTop.
+    const scrollTop = 1500
+    const viewportTop = 100
+    const nodeTop = 100
+
+    const fromBottom = Math.max(
+      0,
+      metrics.scrollHeight - scrollTop - (nodeTop - viewportTop) - metrics.clientHeight
+    )
+
+    expect(fromBottom).toBe(metrics.scrollHeight - scrollTop - metrics.clientHeight)
+    expect(threadScrollTargetTop({ fromBottom, kind: 'offset' }, metrics)).toBe(scrollTop)
+  })
+
+  it('reproduces the offset the machinery would store for the landed position', () => {
+    const scrollTop = 1500
+    const viewportTop = 100
+    // Node sits 240px below the viewport top, so landing on it scrolls down 240.
+    const nodeTop = 340
+
+    const fromBottom = Math.max(
+      0,
+      metrics.scrollHeight - scrollTop - (nodeTop - viewportTop) - metrics.clientHeight
+    )
+
+    const landed = threadScrollTargetTop({ fromBottom, kind: 'offset' }, metrics)
+
+    expect(landed).toBe(scrollTop + 240)
+    expect(threadScrollDistanceFromBottom({ ...metrics, scrollTop: landed })).toBe(fromBottom)
+  })
+
+  it('never returns a negative scrollTop, even for an over-large offset', () => {
+    // An offset deeper than the whole scroll range (content shrank, or a stale
+    // measurement) must clamp to the top, not go negative.
+    const max = metrics.scrollHeight - metrics.clientHeight
+
+    expect(threadScrollTargetTop({ fromBottom: max + 500, kind: 'offset' }, metrics)).toBe(0)
+    expect(threadScrollTargetTop({ fromBottom: max, kind: 'offset' }, metrics)).toBe(0)
   })
 })
