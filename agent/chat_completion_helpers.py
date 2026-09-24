@@ -1552,6 +1552,15 @@ def _assistant_content_for_storage(agent, assistant_message):
         if content:
             from agent.redact import redact_sensitive_text
             content = redact_sensitive_text(content)
+    # Observed-only diagnostic (never mutates ``content``): some routes intermittently
+    # deliver a long markdown reply whose block markers survived but whose newlines never
+    # arrived on the wire, which renders as one run-on paragraph. The loss is upstream, so
+    # nothing is repaired here — we log a sighting with route/model attribution, which is
+    # the only way this rare, silent fault can be characterised. See
+    # agent/collapsed_markdown_guard.py.
+    if content:
+        from agent.collapsed_markdown_guard import note_collapsed_markdown
+        note_collapsed_markdown(agent, content)
     return content
 
 

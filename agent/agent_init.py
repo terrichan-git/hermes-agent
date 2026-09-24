@@ -1359,6 +1359,13 @@ def _apply_agent_section(agent, _agent_cfg):
         agent._empty_guard_enabled, agent._empty_guard_cost_threshold_usd
     ) = resolve_guard_settings(_agent_section.get("empty_response_guard"))
 
+    # Collapsed-markdown guard: observed-only diagnostic (logs, never rewrites). A
+    # malformed section falls back to the schema defaults (on, 800 chars).
+    from agent.collapsed_markdown_guard import resolve_guard_settings as _resolve_collapsed_guard
+    agent._collapsed_markdown_guard_cfg = _resolve_collapsed_guard(
+        _agent_section.get("collapsed_markdown_guard")
+    )
+
     # "auto" (codex_responses only), true (all api_modes), false, or model substrings.
     agent._intent_ack_continuation = _agent_section.get("intent_ack_continuation", "auto")
 

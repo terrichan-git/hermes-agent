@@ -131,6 +131,15 @@ DEFAULT_CONFIG = {
             # drops from 3 to 1. Unknown pricing / missing usage leaves it untouched.
             "cost_threshold_usd": 0.25,
         },
+        # Observed-only diagnostic for markdown replies whose block markers survived but whose
+        # newlines never arrived on the wire (intermittent provider/relay fault, ~1%, renders as
+        # one run-on paragraph). Logs a WARNING with route/model attribution; never rewrites text.
+        "collapsed_markdown_guard": {
+            "enabled": True,
+            # Replies shorter than this prove nothing about the absence of newlines, so they
+            # never classify. Lower only if you expect short collapsed replies.
+            "min_chars": 800,
+        },
         # Fast mode: "" / "normal" (off), "fast" (always), "auto" (first fast_auto_seconds of every
         # turn), "cold" (first turn of a session only).
         "service_tier": "",
