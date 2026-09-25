@@ -30,10 +30,35 @@ function distBinary(dist) {
 }
 
 function electronBuilderCli() {
-  const pkgJson = require.resolve("electron-builder/package.json")
-  const bin = require(pkgJson).bin
+  // Resolve the package's own `package.json` to read its `bin` entry. This used
+  // to be `require.resolve("electron-builder/package.json")`, which electron-builder
+  // 27.0.0-alpha broke: its `exports` map is `["." , "./internal"]`, so the
+  // `./package.json` subpath is no longer importable and the resolve throws
+  // ERR_PACKAGE_PATH_NOT_EXPORTED before any bundling starts.
+  //
+  // `exports` still exposes the root, so ask for the package ENTRY POINT and walk
+  // up to the directory that holds it. Walk rather than hardcode a depth: a
+  // package can point `exports` at `./dist/index.js` today and move it tomorrow,
+  // and `bin` is always a sibling of the package.json we are looking for.
+  let pkgDir
+  try {
+    pkgDir = path.dirname(require.resolve("electron-builder/package.json"))
+  } catch {
+    let dir = path.dirname(require.resolve("electron-builder"))
+    // Bounded: a package directory is never more than a few levels below its
+    // entry point, and an unbounded walk would spin at the filesystem root.
+    for (let i = 0; i < 4 && !fs.existsSync(path.join(dir, "package.json")); i += 1) {
+      const parent = path.dirname(dir)
+      if (parent === dir) break
+      dir = parent
+    }
+    pkgDir = dir
+  }
+
+  const pkgJson = path.join(pkgDir, "package.json")
+  const bin = JSON.parse(fs.readFileSync(pkgJson, "utf8")).bin
   const rel = typeof bin === "string" ? bin : bin["electron-builder"]
-  return path.join(path.dirname(pkgJson), rel)
+  return path.join(pkgDir, rel)
 }
 
 const dist = electronDistDir()
