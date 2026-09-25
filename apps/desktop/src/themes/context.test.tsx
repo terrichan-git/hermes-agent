@@ -3,7 +3,9 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
 import { __resetBackendSkinSync, ingestBackendSkin } from './backend-sync'
 import { getBaseColors, skinPref, ThemeProvider, useTheme } from './context'
-import { BUILTIN_THEME_LIST, everforestTheme } from './presets'
+import { BUILTIN_THEME_LIST, catppuccinTheme, everforestTheme } from './presets'
+import type { DesktopTheme } from './types'
+import { installUserTheme, removeUserTheme } from './user-themes'
 
 // The live-authoring loop: Hermes writes/edits one skin file and every surface
 // repaints. An in-place edit keeps the NAME — only the palette moves.
@@ -13,6 +15,29 @@ const bloomberg = (foreground: string) => ({
 })
 
 const cssVar = (name: string) => window.document.documentElement.style.getPropertyValue(name)
+
+// A theme that opts into the solid user bubble, standing in for a
+// plugin-supplied skin. Built on a real shipped preset so every colour
+// `applyTheme` reads is present, and overriding ONLY the bubble pair — the
+// point is that the ink is what authorises the flat fill. Light is a black
+// plate with white ink; dark inverts it so the bubble stays visible on the
+// near-black canvas.
+const invertTheme: DesktopTheme = {
+  name: 'invert-test',
+  label: 'Invert (test)',
+  description: 'Test fixture: solid user bubble in both modes.',
+  colors: {
+    ...(catppuccinTheme.colors as DesktopTheme['colors']),
+    userBubble: '#000000',
+    userBubbleForeground: '#ffffff'
+  },
+  darkColors: {
+    ...(catppuccinTheme.darkColors as DesktopTheme['colors']),
+    background: '#0d0d0d',
+    userBubble: '#ececec',
+    userBubbleForeground: '#0d0d0d'
+  }
+}
 
 describe('ThemeProvider ← backend skin sync', () => {
   beforeEach(() => {
@@ -117,19 +142,19 @@ describe('ThemeProvider highlight preview', () => {
       </ThemeProvider>
     )
 
-  // The codex preset is only as good as what `applyTheme` actually writes. These
+  // A preset is only as good as what `applyTheme` actually writes. These
   // drive the real provider and assert the derived chain, because the preset's
   // own hexes are seeds — `--dt-primary` and the bubble fill are both computed
   // downstream, and a preset can look correct in the table while painting
   // something else entirely.
-  describe('codex preset paints the derived tokens', () => {
+  describe('a preset paints the derived tokens', () => {
     it('seeds the link/error roles', () => {
       renderProbe()
 
-      act(() => ctx.previewTheme('codex', 'light'))
+      act(() => ctx.previewTheme('github', 'light'))
 
-      expect(cssVar('--theme-primary')).toBe('#1f6ae0')
-      expect(cssVar('--dt-destructive')).toBe('#cc4034')
+      expect(cssVar('--theme-primary')).toBe('#196d31')
+      expect(cssVar('--dt-destructive')).toBe('#cf222e')
       // NOTE: `--dt-primary` is *not* asserted here. It is a CSS declaration
       // (`--dt-primary: var(--theme-primary)` in styles.css), so it is empty in
       // `style.getPropertyValue` — jsdom does not resolve the var() chain. The
@@ -141,37 +166,46 @@ describe('ThemeProvider highlight preview', () => {
     it('lifts the accent for dark rather than reusing the light blue', () => {
       renderProbe()
 
-      act(() => ctx.previewTheme('codex', 'dark'))
+      act(() => ctx.previewTheme('github', 'dark'))
 
-      expect(cssVar('--theme-primary')).toBe('#6ea8ff')
-      expect(cssVar('--dt-destructive')).toBe('#ff8a7a')
+      expect(cssVar('--theme-primary')).toBe('#4f9e5e')
+      expect(cssVar('--dt-destructive')).toBe('#f85149')
       // Dark canvas + light-alpha hairlines: the inversion is the point.
-      expect(cssVar('--theme-background-seed')).toBe('#0d0d0d')
-      expect(cssVar('--theme-foreground')).toBe('#ececec')
+      expect(cssVar('--theme-background-seed')).toBe('#0d1117')
+      expect(cssVar('--theme-foreground')).toBe('#e6edf3')
     })
 
     it('paints the bubble as a solid invert, not the seed tint', () => {
       renderProbe()
 
-      // Codex supplies both, which is what authorises the flat fill. The vars
-      // are the ones styles.css reads: `--dt-user-bubble-solid` is the fill it
-      // prefers, and the ink travels with it so the transcript's foreground
-      // never lands on a black plate.
-      act(() => ctx.previewTheme('codex', 'light'))
+      // This is the contract a PLUGIN theme relies on: supplying both the fill
+      // and the ink is what authorises the flat fill. No shipped preset sets an
+      // ink any more (the Codex theme that did now lives in
+      // ~/.hermes/desktop-plugins/codex-theme), so install one here — which
+      // exercises the same `installUserTheme` path a plugin-supplied theme
+      // takes. The vars are the ones styles.css reads:
+      // `--dt-user-bubble-solid` is the fill it prefers, and the ink travels
+      // with it so the transcript's foreground never lands on a black plate.
+      installUserTheme(invertTheme)
+
+      act(() => ctx.previewTheme('invert-test', 'light'))
       expect(cssVar('--dt-user-bubble-solid')).toBe('#000000')
       expect(cssVar('--theme-user-bubble-foreground')).toBe('#ffffff')
 
-      act(() => ctx.previewTheme('codex', 'dark'))
+      act(() => ctx.previewTheme('invert-test', 'dark'))
       // Dark inverts the other way: a black bubble on a #0d0d0d canvas is
       // invisible, so the fill goes light and the ink dark.
       expect(cssVar('--dt-user-bubble-solid')).toBe('#ececec')
       expect(cssVar('--theme-user-bubble-foreground')).toBe('#0d0d0d')
+
+      removeUserTheme('invert-test')
     })
 
     it('leaves a legacy theme on the tint path — no solid fill, no ink', () => {
       renderProbe()
 
-      act(() => ctx.previewTheme('codex', 'light'))
+      installUserTheme(invertTheme)
+      act(() => ctx.previewTheme('invert-test', 'light'))
       expect(cssVar('--dt-user-bubble-solid')).toBe('#000000')
 
       // nous has a `userBubble` SEED but no ink. It must NOT be promoted to a

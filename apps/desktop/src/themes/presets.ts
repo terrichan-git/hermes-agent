@@ -331,64 +331,6 @@ export const nousAltTheme: DesktopTheme = {
 }
 
 /**
- * Codex — OpenAI's Codex desktop app. See `THEME_PRESET_PALETTES.codex` for the
- * measured rationale. System fonts only, deliberately: Codex ships no webfont,
- * and the `fontUrl` would otherwise pull Courier Prime into the mono stack.
- *
- * The terminal ANSI set is Codex's own light/dark behaviour — a blue-forward
- * palette where reds stay muted rather than alarming, matching the app's rule
- * that red means "failed", never "look at me".
- */
-export const codexTheme: DesktopTheme = {
-  name: 'codex',
-  label: 'Codex',
-  description: 'Monochrome graphite with functional blue and red',
-  ...THEME_PRESET_PALETTES.codex,
-  typography: {
-    fontSans: SYSTEM_SANS,
-    fontMono: SYSTEM_MONO
-  },
-  terminal: {
-    foreground: '#1a1c1f',
-    black: '#1a1c1f',
-    red: '#cc4034',
-    green: '#0f7b45',
-    yellow: '#8a5a00',
-    blue: '#2478f0',
-    magenta: '#6941a8',
-    cyan: '#0e639c',
-    white: '#5d5d5d',
-    brightBlack: '#8f8f8f',
-    brightRed: '#b8362b',
-    brightGreen: '#0c6438',
-    brightYellow: '#6f4a00',
-    brightBlue: '#1a5cc4',
-    brightMagenta: '#553487',
-    brightCyan: '#0b5079',
-    brightWhite: '#1a1c1f'
-  },
-  darkTerminal: {
-    foreground: '#ececec',
-    black: '#1a1a1a',
-    red: '#ff8a7a',
-    green: '#5fd39a',
-    yellow: '#e0b25e',
-    blue: '#6ea8ff',
-    magenta: '#c79bf0',
-    cyan: '#6fc2ff',
-    white: '#a0a0a0',
-    brightBlack: '#767676',
-    brightRed: '#ffa79a',
-    brightGreen: '#7fdfb0',
-    brightYellow: '#ecc47f',
-    brightBlue: '#93bcff',
-    brightMagenta: '#d7b6f5',
-    brightCyan: '#96d2ff',
-    brightWhite: '#ececec'
-  }
-}
-
-/**
  * Midnight — deep blue-violet, near-monotone. Dark only: it has no light
  * palette because the whole idea is the dark end of the spectrum.
  */
@@ -452,7 +394,6 @@ export const BUILTIN_THEMES: Record<string, DesktopTheme> = {
   everforest: everforestTheme,
   solarized: solarizedTheme,
   'nous-alt': nousAltTheme,
-  codex: codexTheme,
   midnight: midnightTheme,
   ember: emberTheme,
   mono: monoTheme,
